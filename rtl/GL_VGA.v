@@ -37,10 +37,7 @@ parameter vfp = ACTIVE_ROWS+vbp;        // beginning of vertical front porch
 
 reg   [10:0] hc;
 reg   [10:0] vc;
-wire [3:0] hedge;
-wire [3:0] vedge;
-wire [8:0] hgrid;
-wire [8:0] vgrid;
+
 wire h_active;
 wire v_active;
 
@@ -117,33 +114,19 @@ always @(posedge clk) begin
 	if(reset) begin
 		hc <= 0;
 		vc <= 0;
-		hedge <= 0;
-		vedge <= 0;
-		hgrid<=0;
-		vgrid<=0;
 	end
 	else if(ce_pix) begin
 		if(hc == TOTAL_COLS-1) begin
 			hc <= 0;
-			hedge<=0;
-			hgrid<=0;
+
 			if(vc == TOTAL_ROWS-1) begin 
 				vc <= 0;
-				vedge<=0;
-				vgrid<=0;
+
 			end else begin
 				vc <= vc + 1'd1;
-				vedge <= vedge + 1'd1;
-				if(vedge == 7) begin
-					vgrid <= vgrid + 1'd1;
-				end
 			end
 		end else begin
 			hc <= hc + 1'd1;
-			hedge <= hedge + 1'd1;
-			if(hedge == 7) begin
-				hgrid <= hgrid + 1'd1;
-			end
 		end
 	end
 	if(hc < ACTIVE_COLS) begin
@@ -199,19 +182,33 @@ end
 */
 
 always @(posedge clk) begin
+		vr <=  8'b00000000;
+		vg <= 8'b00000000;
+		vb <= 8'b00000000;
 
-		vr <=  (!h_active||!v_active) ? 8'b11111111:8'b00000000;
-		vg <= (vedge==7) ? 8'b11111111:8'b00000000;
-		vb <= (hedge==7 ) ? 8'b11111111 : 8'b00000000;
-		if (vgrid==1) begin
+		//vg <= (vc[3:0]==0) ? 8'b11111111:8'b00000000;
+		//vb <= (hc[3:0]==0 ) ? 8'b11111111 : 8'b00000000;
+		if (vc[10:3]==1) begin
+			if (hc[3:3]==1) begin
+				vr <= 8'b11111111;
+				vg <= 8'b11111111;
+				vb <= 8'b11111111;
+			end else begin
+				vr <= 8'b00000000;
+				vg <= 8'b11111111;
+				vb <= 8'b11111111;
+			end
+		end
+		if (vc[10:3]==3) begin
 			vr <= 8'b11111111;
 			vg <= 8'b11111111;
 			vb <= 8'b11111111;
 		end
-		if (hgrid==1) begin
-			vr <= 8'b11111111;
-			vg <= 8'b11111111;
+		if (vc[10:3]==2) begin
+			vr <= 8'b00000000;
+			vg <= 8'b00000000;
 			vb <= 8'b11111111;
 		end
+		
 end
 endmodule
