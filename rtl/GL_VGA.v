@@ -24,7 +24,7 @@ module GL_VGA
 );
 
 /*
-// http://www.tinyvga.com/vga-timing/640x480@60Hz
+http://www.tinyvga.com/vga-timing/640x480@60Hz
 
 General timing
 Screen refresh rate	60 Hz
@@ -82,85 +82,97 @@ localparam vtotal = 525;
 reg   [10:0] hc;
 reg   [10:0] vc;
 
+/**
+* Handles the generation of the horizontal and vertical counters, tracking the current pixel position on the screen.
+*/
 always @(posedge clk) begin
 	/*if(scandouble) ce_pix <= 1;
 		else ce_pix <= ~ce_pix;
 	*/
 	ce_pix<=1;
 
-	if(reset) begin
-		hc <= 0;
-		vc <= 0;
-	end
-	else if(ce_pix) begin
-		if(hc == TOTAL_COLS-1) begin
-			hc <= 0;
+    // Reset horizontal and vertical counters if reset signal is high
+    if(reset) begin
+        hc <= 0; // Reset horizontal counter
+        vc <= 0; // Reset vertical counter
+    end
+    // If pixel clock enable is high, update counters
+    else if(ce_pix) begin
+        // If horizontal counter reaches the total number of columns
+        if(hc == TOTAL_COLS-1) begin
+            hc <= 0; // Reset horizontal counter
 
-			if(vc == TOTAL_ROWS-1) begin 
-				vc <= 0;
-
-			end else begin
-				vc <= vc + 1'd1;
-			end
-		end else begin
-			hc <= hc + 1'd1;
-		end
-	end
-	
-	if(hc < ACTIVE_COLS) begin
-		HBlank <= 0;
-		//HSync <= 1;
-	end else begin
-		//HSync <= 0;
-		HBlank <= 1;
-	end
-
-	if (vc < ACTIVE_ROWS) begin
-		VBlank <= 0;
-		//VSync <= 1;
-	end else begin
-		//VSync <= 0;
-		VBlank <= 1;
-	end
+            // If vertical counter reaches the total number of rows
+            if(vc == TOTAL_ROWS-1) begin 
+                vc <= 0; // Reset vertical counter
+            end else begin
+                vc <= vc + 1'd1; // Increment vertical counter
+            end
+        end else begin
+            hc <= hc + 1'd1; // Increment horizontal counter
+        end
+    end
 end
 
-//assign HBlank = (hc < hviz) ? 0 : 1;
-//assign VBlank = (vc < vviz) ? 0 : 1;
+/**
+* Continuous assignment of HBlank and VBlank signals based on the 
+* current horizontal and vertical counters and the visible area
+*/
+assign HBlank = (hc < hviz) ? 0 : 1;
+assign VBlank = (vc < vviz) ? 0 : 1;
 
+/**
+* Continuous assignment of HSync and VSync signals based on the
+* current horizontal and vertical counters after the back porch for the timing of 
+* horizontal and vertical sync pulses
+*/
 assign HSync = (hc >= hviz+hbp && hc<hviz+hbp+hsp) ? 1 : 0;
 assign VSync = (vc >= vviz+vbp && vc<vviz+vbp+vsp) ? 1 : 0;
 
+/**
+* Handles VGA signal generation, setting the values for the red (vr), green (vg) and blue (vb) signals based on 
+* the current horizontal and vertical counters tracking the pixel position on the screen.
+*
+* The the enclosed logic is executed on the rising edge of the clock signal (posedge clk). At the start of each 
+* clock cycle, vr, vg and vb are set to 0, effectively setting the color to black. 
+* 
+* The logic then sets the color values based on the current horizontal and vertical counters. Creating vertical 
+* and horizontal bars 8 pixels wide/tall alternating every other bar.
+*/
 always @(posedge clk) begin
 		vr <=  8'b00000000;
 		vg <= 8'b00000000;
 		vb <= 8'b00000000;
 
+		//create red vertical bar every other row
 		if (hc[3:3]==1) begin
 			vr <= 8'b11111111;
 		end else begin
 			vr <= 8'b00000000;
 		end
 
+		//create blue vertical bar every other row
 		if (vc[3:3]==1) begin
 			vb <= 8'b00000000;
 		end else begin
 			vb <= 8'b11111111;
 		end
 
-		//vg <= (vc[3:0]==0) ? 8'b11111111:8'b00000000;
-		//vb <= (hc[3:0]==0 ) ? 8'b11111111 : 8'b00000000;
-
+		//create white bar on the first and last columns
 		if (vc[10:3]==0 || vc[10:3]>=59) begin
 			vr <= 8'b11111111;
 			vg <= 8'b11111111;
 			vb <= 8'b11111111;
 		end
+
+		//create white bar on the first and last rows
 		if (hc[10:3]==0 || hc[10:3]>=79) begin
 			vr <= 8'b11111111;
 			vg <= 8'b11111111;
 			vb <= 8'b11111111;
 		end
 
+		//create a white border around a column and row
 		if (hc==32 || hc==40) begin
 			vr <= 8'b11111111;
 			vg <= 8'b11111111;
