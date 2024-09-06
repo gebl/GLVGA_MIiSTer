@@ -17,8 +17,8 @@ This repository contains a basic FPGA core designed for the MiSTer FPGA platform
    ```bash
    git clone https://github.com/gebl/GLVGA_MIiSTer.git
    ```
-2. Use your preferred FPGA toolchain to synthesize the core.
-3. Load the core onto your MiSTer device and connect a VGA monitor to visualize the output.
+2. Follow instructions for building MiSTer projects [here](https://mister-devel.github.io/MkDocs_MiSTer/developer/mistercompile/)
+3. Load the core onto your MiSTer device and run it to see the output.
 
 ## VGA Signal Overview
 The core generates standard VGA signals, including:
@@ -30,6 +30,6 @@ The core generates standard VGA signals, including:
 Contributions are welcome! Feel free to fork the repository and submit pull requests for improvements, bug fixes, or additional features.
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the GPLv2 License.
 
 For more details, check the repository: [GLVGA_MIiSTer](https://github.com/gebl/GLVGA_MIiSTer).
