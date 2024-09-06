@@ -1,4 +1,12 @@
-
+/**
+* Sample module for MiSTer for exploing VGA output.
+*
+* The module generates a VGA signal with a resolution of 640x480 pixels at 60Hz. The module generates
+* the horizontal and vertical sync signals, as well as the red, green and blue signals for the VGA output.
+* 
+* It generates a pattern on the screen based on the hc/vc counters, creating vertical and horizontal bars and 
+* highlighting the boundary of a specific column and row.
+*/
 module GL_VGA
 #(parameter VIDEO_WIDTH = 3,
    parameter TOTAL_COLS  = 800, 
